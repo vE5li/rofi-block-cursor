@@ -442,6 +442,28 @@ static void textbox_draw ( widget *wid, cairo_t *draw )
         int rem = MAX ( 0, tb->widget.w - widget_padding_get_padding_width ( WIDGET ( tb ) ) - line_width );
         x = tb->xalign * rem + widget_padding_get_left ( WIDGET ( tb ) );
     }
+
+    // draw the cursor
+    cairo_set_source_rgb ( draw, 0.0, 0.0, 0.0 );
+    rofi_theme_get_color ( WIDGET ( tb ), "cursor-color", draw );
+
+    if ( tb->flags & TB_EDITABLE && tb->blink ) {
+        // We want to place the cursor based on the text shown.
+        const char     *text = pango_layout_get_text ( tb->layout );
+        // Clamp the position, should not be needed, but we are paranoid.
+        int            cursor_offset = MIN ( tb->cursor, g_utf8_strlen ( text, -1 ) );
+        PangoRectangle pos;
+        // convert to byte location.
+        char           *offset = g_utf8_offset_to_pointer ( text, cursor_offset );
+        pango_layout_get_cursor_pos ( tb->layout, offset - text, &pos, NULL );
+        int            cursor_x      = pos.x / PANGO_SCALE;
+        int            cursor_y      = pos.y / PANGO_SCALE;
+        int            cursor_height = pos.height / PANGO_SCALE;
+        int            cursor_width  = 8;
+        cairo_rectangle ( draw, x + cursor_x, y + cursor_y, cursor_width, cursor_height );
+        cairo_fill ( draw );
+    }
+
     // TODO check if this is still needed after flatning.
     cairo_set_operator ( draw, CAIRO_OPERATOR_OVER );
     cairo_set_source_rgb ( draw, 0.0, 0.0, 0.0 );
@@ -457,25 +479,6 @@ static void textbox_draw ( widget *wid, cairo_t *draw )
     cairo_reset_clip ( draw );
     pango_cairo_show_layout ( draw, tb->layout );
     cairo_restore ( draw );
-
-    // draw the cursor
-    rofi_theme_get_color ( WIDGET ( tb ), "text-color", draw );
-    if ( tb->flags & TB_EDITABLE && tb->blink ) {
-        // We want to place the cursor based on the text shown.
-        const char     *text = pango_layout_get_text ( tb->layout );
-        // Clamp the position, should not be needed, but we are paranoid.
-        int            cursor_offset = MIN ( tb->cursor, g_utf8_strlen ( text, -1 ) );
-        PangoRectangle pos;
-        // convert to byte location.
-        char           *offset = g_utf8_offset_to_pointer ( text, cursor_offset );
-        pango_layout_get_cursor_pos ( tb->layout, offset - text, &pos, NULL );
-        int            cursor_x      = pos.x / PANGO_SCALE;
-        int            cursor_y      = pos.y / PANGO_SCALE;
-        int            cursor_height = pos.height / PANGO_SCALE;
-        int            cursor_width  = 2;
-        cairo_rectangle ( draw, x + cursor_x, y + cursor_y, cursor_width, cursor_height );
-        cairo_fill ( draw );
-    }
 
     if ( ( tb->flags & TB_INDICATOR ) == TB_INDICATOR && ( tb->tbft & ( SELECTED ) ) ) {
         cairo_arc ( draw, DOT_OFFSET / 2.0, tb->widget.h / 2.0, 2.0, 0, 2.0 * M_PI );
