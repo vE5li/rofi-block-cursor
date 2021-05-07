@@ -1,0 +1,92 @@
+configuration {
+    font:                 "Source Code Pro 10";
+    margin:               0;
+    margin-bottom:        0;
+    margin-top:           0;
+    spacing:              0;
+    show-icons:           false;
+    hide-scrollbar:       true;
+
+    drun-display-format:  "{icon} {name}";
+    modi:                 "run";
+
+    display-drun:         "";
+    display-run:          "";
+    display-ssh:          "";
+    display-window:       "";
+}
+
+
+* {
+    background-color:     #222222;
+    bg:                   #222222;
+    bg-alternate:         #2d2d2d;
+    fg:                   #4b4b4b;
+    fg-highlight:         #cccccc;
+    fg-input:             #cccccc;
+    border-color:         #666666;
+}
+
+#listview {
+    spacing:              0px;
+    columns:              1;
+    margin:               0;
+    dynamic:              true;
+    padding:              0;
+    lines:                16;
+}
+
+#window {
+    background-color:     @bg;
+    border-color:         @border-color;
+    border:               3;
+    border-radius:        0;
+    width:                30%;
+}
+
+#mainbox {
+    border:               0;
+    padding:              0;
+    background-color:     @bg;
+}
+
+#element {
+    padding:              3;
+    text-color:           @fg;
+    background-color:     @bg;
+}
+
+#element.selected.normal {
+    background-color:     @bg-alternate;
+    text-color:           @fg-highlight;
+}
+
+#element.normal.active {
+    background-color:     @bg;
+}
+
+#element.normal.urgent {
+    background-color:     @bg-alternate;
+    text-color:           @fg-urgent;
+}
+
+#inputbar {
+    background-color:     @bg;
+    border:               0 0 0 0;
+    border-color:         @border-color;
+    children:             [prompt, entry];
+}
+
+#prompt {
+    enabled:              true;
+    padding:              0px;
+    text-color:           @fg-input;
+}
+
+#entry {
+    padding:              3 3 3 3;
+    text-color:           @fg-input;
+    cursor-color: 	  #4b4b4b;
+    cursor-width:	  8px;
+    blink: 		  false;
+}
