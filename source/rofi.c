@@ -119,6 +119,7 @@ static int      dmenu_mode = FALSE;
 /** Rofi's return code */
 int             return_code = EXIT_SUCCESS;
 
+/** Flag indicating we are using old config format. */
 static gboolean old_config_format = FALSE;
 
 void process_result ( RofiViewState *state );
@@ -289,7 +290,6 @@ static void print_main_application_options ( int is_term )
     print_help_msg ( "-dmenu", "", "Start in dmenu mode.", NULL, is_term );
     print_help_msg ( "-display", "[string]", "X server to contact.", "${DISPLAY}", is_term );
     print_help_msg ( "-h,-help", "", "This help message.", NULL, is_term );
-    print_help_msg ( "-dump-xresources", "", "Dump the current configuration in Xresources format and exit.", NULL, is_term );
     print_help_msg ( "-e", "[string]", "Show a dialog displaying the passed message and exit.", NULL, is_term );
     print_help_msg ( "-markup", "", "Enable pango markup where possible.", NULL, is_term );
     print_help_msg ( "-normal-window", "", "Behave as a normal window. (experimental)", NULL, is_term );
@@ -477,11 +477,6 @@ static void cleanup ()
  * Collected modi
  */
 
-/**
- * @param name Search for mode with this name.
- *
- * @return returns Mode * when found, NULL if not.
- */
 Mode * rofi_collect_modi_search ( const char *name )
 {
     for ( unsigned int i = 0; i < num_available_modi; i++ ) {
@@ -947,8 +942,6 @@ int main ( int argc, char *argv[] )
             }
             g_free ( etc );
         }
-        // Load in config from X resources.
-        config_parse_xresource_options ( xcb );
 
         if ( config_path_new && g_file_test ( config_path_new, G_FILE_TEST_IS_REGULAR ) ) {
             if ( rofi_theme_parse_file ( config_path_new ) ) {
@@ -1114,11 +1107,6 @@ int main ( int argc, char *argv[] )
     // catch help request
     if ( find_arg (  "-h" ) >= 0 || find_arg (  "-help" ) >= 0 || find_arg (  "--help" ) >= 0 ) {
         help ( argc, argv );
-        cleanup ();
-        return EXIT_SUCCESS;
-    }
-    if ( find_arg (  "-dump-xresources" ) >= 0 ) {
-        config_parse_xresource_dump ();
         cleanup ();
         return EXIT_SUCCESS;
     }

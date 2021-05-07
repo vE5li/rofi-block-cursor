@@ -45,7 +45,6 @@
 /** Different sources of configuration. */
 const char * const ConfigSourceStr[] = {
     "Default",
-    "XResources",
     "File",
     "Rasi File",
     "Commandline",
@@ -54,10 +53,9 @@ const char * const ConfigSourceStr[] = {
 enum ConfigSource
 {
     CONFIG_DEFAULT    = 0,
-    CONFIG_XRESOURCES = 1,
-    CONFIG_FILE       = 2,
-    CONFIG_FILE_THEME = 3,
-    CONFIG_CMDLINE    = 4
+    CONFIG_FILE       = 1,
+    CONFIG_FILE_THEME = 2,
+    CONFIG_CMDLINE    = 3
 };
 
 typedef struct
@@ -158,6 +156,8 @@ static XrmOption xrmOptions[] = {
       "Cycle through the results list", CONFIG_DEFAULT },
     { xrm_Boolean, "sidebar-mode",              { .num   = &config.sidebar_mode                         }, NULL,
       "Enable sidebar-mode", CONFIG_DEFAULT },
+    { xrm_Boolean, "hover-select",              { .snum   = &config.hover_select                         }, NULL,
+      "Enable hover-select", CONFIG_DEFAULT },
     { xrm_SNumber, "eh",                        { .snum  = &config.element_height                       }, NULL,
       "Row height (in chars)", CONFIG_DEFAULT },
     { xrm_Boolean, "auto-select",               { .num   = &config.auto_select                          }, NULL,
@@ -187,8 +187,6 @@ static XrmOption xrmOptions[] = {
       "Separator style (none, dash, solid) *DEPRECATED*", CONFIG_DEFAULT },
     { xrm_Boolean, "hide-scrollbar",            { .num   = &config.hide_scrollbar                       }, NULL,
       "Hide scroll-bar *DEPRECATED*", CONFIG_DEFAULT },
-    { xrm_Boolean, "fullscreen",                { .num   = &config.fullscreen                           }, NULL,
-      "Fullscreen", CONFIG_DEFAULT },
     { xrm_Boolean, "fake-transparency",         { .num   = &config.fake_transparency                    }, NULL,
       "Fake transparency *DEPRECATED*", CONFIG_DEFAULT },
     { xrm_SNumber, "dpi",                       { .snum  = &config.dpi                                  }, NULL,
@@ -205,8 +203,6 @@ static XrmOption xrmOptions[] = {
       "Window Format. w (desktop name), t (title), n (name), r (role), c (class)", CONFIG_DEFAULT },
     { xrm_Boolean, "click-to-exit",             { .snum  = &config.click_to_exit                        }, NULL,
       "Click outside the window to exit", CONFIG_DEFAULT },
-    { xrm_Boolean, "show-match",                { .snum  = &config.show_match                           }, NULL,
-      "Indicate how it match by underlining it.", CONFIG_DEFAULT },
     { xrm_String,  "theme",                     { .str   = &config.theme                                }, NULL,
       "New style theme file", CONFIG_DEFAULT },
     { xrm_String,  "color-normal",              { .str   = &config.color_normal                         }, NULL,
@@ -232,7 +228,9 @@ static XrmOption xrmOptions[] = {
     { xrm_Boolean, "drun-reload-desktop-cache", { .snum  = &config.drun_reload_desktop_cache            }, NULL,
       "DRUN: If enabled, reload the cache with desktop file content.", CONFIG_DEFAULT },
     { xrm_Boolean, "normalize-match",           { .snum  = &config.normalize_match                      }, NULL,
-      "Normalize string when matching (implies -no-show-match).", CONFIG_DEFAULT },
+      "Normalize string when matching (disables match highlighting).", CONFIG_DEFAULT },
+    { xrm_Boolean, "steal-focus",               { .snum  = &config.steal_focus                          }, NULL,
+      "Steal focus on launch and restore to window that had it on rofi start on close .", CONFIG_DEFAULT },
 };
 
 /** Dynamic array of extra options */
@@ -335,15 +333,7 @@ static void __config_parse_xresource_options_dynamic ( xcb_xrm_database_t *xDB, 
         g_free ( name );
     }
 }
-void config_parse_xresource_options ( xcb_stuff *xcb )
-{
-    xcb_xrm_database_t *xDB = xcb_xrm_database_from_default ( xcb->connection );
-    if ( xDB ) {
-        __config_parse_xresource_options ( xDB, CONFIG_XRESOURCES );
-        __config_parse_xresource_options_dynamic ( xDB, CONFIG_XRESOURCES );
-        xcb_xrm_database_free ( xDB );
-    }
-}
+
 void config_parse_xresource_options_file ( const char *filename )
 {
     if ( !filename ) {
@@ -531,63 +521,6 @@ void config_xresource_free ( void )
     }
     if ( extra_options != NULL ) {
         g_free ( extra_options );
-    }
-}
-
-static void xresource_dump_entry ( const char *namePrefix, XrmOption *option )
-{
-    printf ( "! \"%s\" ", option->comment );
-    printf ( "Set from: %s\n", ConfigSourceStr[option->source] );
-    if ( option->source == CONFIG_DEFAULT ) {
-        printf ( "! " );
-    }
-    printf ( "%s.%s: %*s", namePrefix, option->name,
-             (int) ( 30 - strlen ( option->name ) ), "" );
-    switch ( option->type )
-    {
-    case xrm_Number:
-        printf ( "%u", *( option->value.num ) );
-        break;
-    case xrm_SNumber:
-        printf ( "%i", *( option->value.snum ) );
-        break;
-    case xrm_String:
-        if ( ( *( option->value.str ) ) != NULL ) {
-            printf ( "%s", *( option->value.str ) );
-        }
-        break;
-    case xrm_Boolean:
-        printf ( "%s", ( *( option->value.num ) == TRUE ) ? "true" : "false" );
-        break;
-    case xrm_Char:
-        if ( *( option->value.charc ) > 32 && *( option->value.charc ) < 127 ) {
-            printf ( "%c", *( option->value.charc ) );
-        }
-        else {
-            printf ( "\\x%02X", *( option->value.charc ) );
-        }
-        break;
-    default:
-        break;
-    }
-    printf ( "\n" );
-}
-
-void config_parse_xresource_dump ( void )
-{
-    const char   * namePrefix = "rofi";
-    unsigned int entries      = sizeof ( xrmOptions ) / sizeof ( *xrmOptions );
-    for ( unsigned int i = 0; i < entries; ++i ) {
-        // Skip duplicates.
-        if ( ( i + 1 ) < entries ) {
-            if ( xrmOptions[i].value.str == xrmOptions[i + 1].value.str ) {
-                continue;
-            }
-        }
-        xresource_dump_entry ( namePrefix, &( xrmOptions[i] ) );
-    }
-    for ( unsigned int i = 0; i < num_extra_options; i++ ) {
-        xresource_dump_entry ( namePrefix, &( extra_options[i] ) );
     }
 }
 

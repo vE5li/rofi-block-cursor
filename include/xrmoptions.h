@@ -81,16 +81,6 @@ typedef enum
 } XrmOptionType;
 
 /**
- * @param xcb  Handler object holding connection used to fetch the settings from.
- *
- * Parse the rofi related X resource options of the
- * connected X server.
- *
- * @ingroup CONFXServer
- */
-void config_parse_xresource_options ( xcb_stuff *xcb );
-
-/**
  * @param filename The xresources file to parse
  *
  * Parses filename and updates the config
@@ -110,14 +100,6 @@ void config_parse_cmd_options ( void );
  * @ingroup CONFXResources
  */
 void config_xresource_free ( void );
-
-/**
- * Dump the settings in a Xresources compatible way to
- * stdout.
- *
- * @ingroup CONFXResources
- */
-void config_parse_xresource_dump ( void );
 
 /**
  * @param type The type of the value

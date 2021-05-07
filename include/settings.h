@@ -139,6 +139,8 @@ typedef struct
     int            element_height;
     /** Sidebar mode, show the modi */
     unsigned int   sidebar_mode;
+    /** Mouse hover automatically selects */
+    gboolean       hover_select;
     /** Lazy filter limit. */
     unsigned int   lazy_filter_limit;
     /** Auto select. */
@@ -163,8 +165,6 @@ typedef struct
     char           *separator_style;
     /** hide scrollbar */
     unsigned int   hide_scrollbar;
-    /** fullscreen */
-    unsigned int   fullscreen;
     /** bg image */
     unsigned int   fake_transparency;
     /** dpi */
@@ -179,7 +179,6 @@ typedef struct
     char           *window_format;
     /** Click outside the window to exit */
     int            click_to_exit;
-    gboolean       show_match;
 
     char           *theme;
     /** Path where plugins can be found. */
@@ -205,6 +204,8 @@ typedef struct
     gboolean       benchmark_ui;
 
     gboolean       normalize_match;
+    /** Steal focus */
+    gboolean       steal_focus;
 } Settings;
 /** Global Settings structure. */
 extern Settings config;

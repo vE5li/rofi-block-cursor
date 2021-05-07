@@ -227,11 +227,19 @@ void rofi_capture_screenshot ( void )
  * Code used for benchmarking drawing the gui, this will keep updating the UI as fast as possible.
  */
 gboolean do_bench = TRUE;
-struct
+
+/**
+ * Internal structure that hold benchmarking information.
+ */
+static struct
 {
+    /** timer used for timestamping. */
     GTimer   *time;
+    /** number of draws done. */
     uint64_t draws;
+    /** previous timestamp */
     double   last_ts;
+    /** minimum draw time. */
     double   min;
 } BenchMark = {
     .time    = NULL,
@@ -737,14 +745,18 @@ static void rofi_view_setup_fake_transparency ( widget *win, const char* const f
 }
 void __create_window ( MenuFlags menu_flags )
 {
-    uint32_t          selmask  = XCB_CW_BACK_PIXMAP | XCB_CW_BORDER_PIXEL | XCB_CW_BIT_GRAVITY | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
+    uint32_t selmask         = XCB_CW_BACK_PIXMAP | XCB_CW_BORDER_PIXEL | XCB_CW_BIT_GRAVITY | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
+    uint32_t xcb_event_masks = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+                               XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_KEYMAP_STATE |
+                               XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_1_MOTION;
+    if ( config.hover_select == TRUE ) {
+        xcb_event_masks |= XCB_EVENT_MASK_POINTER_MOTION;
+    }
     uint32_t          selval[] = {
-        XCB_BACK_PIXMAP_NONE,                                                                           0,
+        XCB_BACK_PIXMAP_NONE,         0,
         XCB_GRAVITY_STATIC,
         XCB_BACKING_STORE_NOT_USEFUL,
-        XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-        XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_KEYMAP_STATE |
-        XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_1_MOTION,
+        xcb_event_masks,
         map
     };
 
@@ -844,7 +856,7 @@ void __create_window ( MenuFlags menu_flags )
     }
 
     TICK_N ( "setup window attributes" );
-    CacheState.fullscreen = rofi_theme_get_boolean ( WIDGET ( win ), "fullscreen", config.fullscreen );
+    CacheState.fullscreen = rofi_theme_get_boolean ( WIDGET ( win ), "fullscreen", FALSE );
     if ( CacheState.fullscreen ) {
         xcb_atom_t atoms[] = {
             xcb->ewmh._NET_WM_STATE_FULLSCREEN,
@@ -1021,7 +1033,7 @@ static void update_callback ( textbox *t, icon *ico, unsigned int index, void *u
             icon_set_surface ( ico, icon );
         }
 
-        if ( state->tokens && config.show_match ) {
+        if ( state->tokens ) {
             RofiHighlightColorStyle th = { ROFI_HL_BOLD | ROFI_HL_UNDERLINE, { 0.0, 0.0, 0.0, 0.0 } };
             th = rofi_theme_get_highlight ( WIDGET ( t ), "highlight", th );
             helper_token_match_get_pango_attr ( th, state->tokens, textbox_get_visible_text ( t ), list );
@@ -1488,13 +1500,22 @@ void rofi_view_handle_text ( RofiViewState *state, char *text )
     }
 }
 
-void rofi_view_handle_mouse_motion ( RofiViewState *state, gint x, gint y )
+void rofi_view_handle_mouse_motion ( RofiViewState *state, gint x, gint y, gboolean find_mouse_target )
 {
     state->mouse.x = x;
     state->mouse.y = y;
+    if ( find_mouse_target ) {
+        widget *target = widget_find_mouse_target ( WIDGET ( state->main_window ), SCOPE_MOUSE_LISTVIEW_ELEMENT, x, y );
+        if ( target != NULL ) {
+            state->mouse.motion_target = target;
+        }
+    }
     if ( state->mouse.motion_target != NULL ) {
         widget_xy_to_relative ( state->mouse.motion_target, &x, &y );
         widget_motion_notify ( state->mouse.motion_target, x, y );
+        if ( find_mouse_target ) {
+            state->mouse.motion_target = NULL;
+        }
     }
 }
 

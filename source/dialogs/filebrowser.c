@@ -58,6 +58,7 @@ enum FBFileType
     RFILE,
     NUM_FILE_TYPES,
 };
+/** Icons to use for the file type  */
 const char *icon_name[NUM_FILE_TYPES] =
 {
     "go-up",
@@ -238,8 +239,9 @@ static ModeMode file_browser_mode_result ( Mode *sw, int mretv, char **input, un
     }
     else if ( mretv & MENU_QUICK_SWITCH ) {
         retv = ( mretv & MENU_LOWER_MASK );
-    }
-    else if ( ( mretv & MENU_OK ) ) {
+    } else if ( mretv & MENU_CUSTOM_COMMAND ) {
+        retv = ( mretv & MENU_LOWER_MASK );
+    } else if ( ( mretv & MENU_OK ) ) {
         if ( selected_line < pd->array_length ) {
             if ( pd->array[selected_line].type == UP ) {
                 GFile *new = g_file_get_parent ( pd->current_dir );

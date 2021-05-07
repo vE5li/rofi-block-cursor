@@ -141,7 +141,6 @@ Settings config = {
     .separator_style           = "dash",
     /** Hide scrollbar */
     .hide_scrollbar         = FALSE,
-    .fullscreen             = FALSE,
     .fake_transparency      = FALSE,
     .dpi                    = -1,
     .threads                = 0,
@@ -150,7 +149,6 @@ Settings config = {
     .fake_background        = "screenshot",
     .window_format          = "{w}    {c}   {t}",
     .click_to_exit          = TRUE,
-    .show_match             = TRUE,
     .theme                  = NULL,
     .color_normal           = NULL,
     .color_active           = NULL,
@@ -173,5 +171,7 @@ Settings config = {
     .benchmark_ui              = FALSE,
 
     /** normalize match */
-    .normalize_match           = FALSE
+    .normalize_match           = FALSE,
+    /** steal focus */
+    .steal_focus               = FALSE 
 };
