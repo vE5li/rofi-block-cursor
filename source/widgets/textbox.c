@@ -456,11 +456,12 @@ static void textbox_draw ( widget *wid, cairo_t *draw )
         // convert to byte location.
         char           *offset = g_utf8_offset_to_pointer ( text, cursor_offset );
         pango_layout_get_cursor_pos ( tb->layout, offset - text, &pos, NULL );
-        int            cursor_x      = pos.x / PANGO_SCALE;
-        int            cursor_y      = pos.y / PANGO_SCALE;
+        int            cursor_x = pos.x / PANGO_SCALE;
+        int            cursor_y = pos.y / PANGO_SCALE;
         int            cursor_height = pos.height / PANGO_SCALE;
-        int            cursor_width  = 8;
-        cairo_rectangle ( draw, x + cursor_x, y + cursor_y, cursor_width, cursor_height );
+        RofiDistance   cursor_width  = rofi_theme_get_distance ( WIDGET ( tb ), "cursor-width", 2 );
+        int            cursor_pixel_width = distance_get_pixel ( cursor_width, ROFI_ORIENTATION_HORIZONTAL );
+        cairo_rectangle ( draw, x + cursor_x, y + cursor_y, cursor_pixel_width, cursor_height );
         cairo_fill ( draw );
     }
 
