@@ -336,7 +336,7 @@ static void dmenu_mode_free ( Mode *sw )
 Mode dmenu_mode =
 {
     .name               = "dmenu",
-    .cfg_name_key       = "display-combi",
+    .cfg_name_key       = "display-dmenu",
     ._init              = dmenu_mode_init,
     ._get_num_entries   = dmenu_mode_get_num_entries,
     ._result            = NULL,
@@ -349,7 +349,7 @@ Mode dmenu_mode =
     ._get_message       = dmenu_get_message,
     .private_data       = NULL,
     .free               = NULL,
-    .display_name       = "dmenu"
+    .display_name       = ""
 };
 
 static int dmenu_mode_init ( Mode *sw )

@@ -722,7 +722,7 @@ static void rofi_view_setup_fake_transparency ( widget *win, const char* const f
             }
             else {
                 CacheState.fake_bg = cairo_image_surface_create ( CAIRO_FORMAT_ARGB32, CacheState.mon.w, CacheState.mon.h );
-                
+
                 int blur = rofi_theme_get_integer ( WIDGET ( win ), "blur", 0 );
                 cairo_t *dr = cairo_create ( CacheState.fake_bg );
                 if ( CacheState.fake_bgrel ) {
