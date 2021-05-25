@@ -293,8 +293,7 @@ static gboolean rofi_view_repaint ( G_GNUC_UNUSED void * data  )
 static void rofi_view_update_prompt ( RofiViewState *state )
 {
     if ( state->prompt ) {
-        const char *str = mode_get_display_name ( state->sw );
-        textbox_text ( state->prompt, str );
+        textbox_text ( state->prompt, "" );
     }
 }
 
